@@ -3,22 +3,28 @@
 
 # 9
 # С использованием многопоточности для заданного значения x найти сумму ряда S
-# с точностью члена ряда по абсолютному значению e=10^-7 и произвести 
-# сравнение полученной суммы с контрольным значением функции y для двух 
+# с точностью члена ряда по абсолютному значению e=10^-7 и произвести
+# сравнение полученной суммы с контрольным значением функции y для двух
 # бесконечных рядов.
 # Варианты 16 и 17
 
 # 11
-# Для своего индивидуального задания лабораторной работы 2.23 необходимо 
+# Для своего индивидуального задания лабораторной работы 2.23 необходимо
 # реализовать вычисление значений в двух функций в отдельных процессах.
 
 import math
-from multiprocessing import Process, Array
+from multiprocessing import Process, Array, Manager
 
 epsilon = 1e-7
 
 
-def func(x, result):
+def power(x, n, cache):
+    if (x, n) not in cache:
+        cache[(x, n)] = x**n
+    return cache[(x, n)]
+
+
+def func(x, result, cache):
     sum = 0
     n = 0
     term = 1
@@ -27,15 +33,15 @@ def func(x, result):
         sum += term
         n += 1
         factor *= n
-        term = (-1)**n * x**(2 * n) / factor
+        term = (-1)**n * power(x, 2 * n, cache) / factor
     result[0] = sum
 
 
-def func2(x, result):
+def func2(x, result, cache):
     sum = 0
     n = 1
     while True:
-        term = 1 / (2 * n - 1) * ((x - 1) / (x + 1))**(2 * n - 1)
+        term = 1 / (2 * n - 1) * power((x - 1) / (x + 1), 2 * n - 1, cache)
         if abs(term) < epsilon:
             break
         else:
@@ -47,8 +53,8 @@ def func2(x, result):
 def main():
     result = Array('d', [0.0, 0.0])
 
-    process1 = Process(target=func, args=(-0.7, result))
-    process2 = Process(target=func2, args=(0.6, result))
+    process1 = Process(target=func, args=(-0.7, result, cache))
+    process2 = Process(target=func2, args=(0.6, result, cache))
 
     process1.start()
     process2.start()
@@ -79,4 +85,6 @@ def main():
 
 
 if __name__ == "__main__":
+    manager = Manager()
+    cache = manager.dict()
     main()
