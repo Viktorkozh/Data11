@@ -23,24 +23,24 @@ def func(x, result):
     n = 0
     term = 1
     factor = 1
-    x_2n = 1
+    x_pown = 1
     while abs(term) > epsilon:
         sum += term
         n += 1
         factor *= n
-        x_2n *= x ** 2
-        term = (-1)**n * x_2n / factor
+        x_pown *= x ** 2
+        term = (-1)**n * x_pown / factor
     result[0] = sum
 
 
 def func2(x, result):
     sum = 0
     n = 1
-    x_2n = (x - 1) / (x + 1)
-    x_term = x_2n
+    x_pown = (x - 1) / (x + 1)
+    x_term = x_pown
     while True:
-        term = 1 / (2 * n - 1) * x_2n
-        x_2n *= x_term**2
+        term = 1 / (2 * n - 1) * x_pown
+        x_pown *= x_term**2
         if abs(term) < epsilon:
             break
         else:
