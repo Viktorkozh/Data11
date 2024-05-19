@@ -18,30 +18,29 @@ from multiprocessing import Process, Array, Manager
 epsilon = 1e-7
 
 
-def power(x, n, cache):
-    if (x, n) not in cache:
-        cache[(x, n)] = x**n
-    return cache[(x, n)]
-
-
-def func(x, result, cache):
+def func(x, result):
     sum = 0
     n = 0
     term = 1
     factor = 1
+    x_2n = 1
     while abs(term) > epsilon:
         sum += term
         n += 1
         factor *= n
-        term = (-1)**n * power(x, 2 * n, cache) / factor
+        x_2n *= x ** 2
+        term = (-1)**n * x_2n / factor
     result[0] = sum
 
 
-def func2(x, result, cache):
+def func2(x, result):
     sum = 0
     n = 1
+    x_2n = (x - 1) / (x + 1)
+    x_term = x_2n
     while True:
-        term = 1 / (2 * n - 1) * power((x - 1) / (x + 1), 2 * n - 1, cache)
+        term = 1 / (2 * n - 1) * x_2n
+        x_2n *= x_term**2
         if abs(term) < epsilon:
             break
         else:
@@ -53,8 +52,8 @@ def func2(x, result, cache):
 def main():
     result = Array('d', [0.0, 0.0])
 
-    process1 = Process(target=func, args=(-0.7, result, cache))
-    process2 = Process(target=func2, args=(0.6, result, cache))
+    process1 = Process(target=func, args=(-0.7, result))
+    process2 = Process(target=func2, args=(0.6, result))
 
     process1.start()
     process2.start()
@@ -85,6 +84,4 @@ def main():
 
 
 if __name__ == "__main__":
-    manager = Manager()
-    cache = manager.dict()
     main()
